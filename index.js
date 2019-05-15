@@ -1,9 +1,14 @@
 const rp = require('request-promise');
 const $ = require('cheerio');
-const url = 'https://www.crowdsupply.com/unexpected-maker/tinypico';
+const mainUrl = 'https://www.crowdsupply.com/unexpected-maker/tinypico';
 
-let pledgeLevelDetails = [];
-rp(url)
+const express = require('express')
+const app = express()
+const port = process.env.PORT || 3008;
+
+
+const getPledgeDetails = (url) => {
+  return rp(url)
   .then(function(html){
     //success!
     //console.log(html);
@@ -25,11 +30,17 @@ rp(url)
     });
     return levels;
   })
-  .then(function(pledgeLevels){
-    pledgeLevelDetails = pledgeLevels;
-    console.log(pledgeLevelDetails);
+}
+
+app.get('/pledge', (req, res) => {
+  getPledgeDetails(mainUrl)
+  .then(pledgeDetails => {
+    res.json(pledgeDetails);
   })
-  .catch(function(err){
-    //handle error
+  .catch(err => {
     console.log(err);
-  });
+    res.send('Error, check logs');
+  })
+})
+
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))

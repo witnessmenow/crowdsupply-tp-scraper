@@ -1,0 +1,40 @@
+box: nodesource/trusty:5.9.1
+
+build:
+  steps:
+
+    - npm-install
+
+    - internal/docker-push:
+          username: $DOCKER_HUB_USERNAME
+          password: $DOCKER_HUB_PASSWORD
+          cmd: /pipeline/source/node_modules/forever/bin/forever /pipeline/source/index.js
+          tag: $DOCKER_IMAGE_TAG
+          repository: $DOCKER_HUB_USERNAME/$DOCKER_IMAGE_NAME
+          registry: https://registry.hub.docker.com
+
+deploy:
+  steps:
+    - add-to-known_hosts:
+        hostname: $HOSTNAME
+    - mktemp:
+        envvar: PRIVATEKEY_PATH
+    - create-file:
+        name: write key
+        filename: $PRIVATEKEY_PATH
+        content: $KEY_PRIVATE
+        overwrite: true
+        hide-from-log: true
+
+    - script:
+        name: stop login pull start
+        code: |
+          ssh -i $PRIVATEKEY_PATH -l root  $HOSTNAME docker login -e $DOCKER_HUB_EMAIL -p $DOCKER_HUB_PASSWORD -u $DOCKER_HUB_USERNAME
+          ssh -i $PRIVATEKEY_PATH -l root  $HOSTNAME docker pull $DOCKER_HUB_USERNAME/$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+          ssh -i $PRIVATEKEY_PATH -l root  $HOSTNAME "docker ps -a | grep -q $DOCKER_IMAGE_TAG && docker rm -f $DOCKER_IMAGE_TAG || echo \"$DOCKER_IMAGE_TAG not running\" "
+          echo docker run --restart always -d -e  \"VIRTUAL_HOST=$VIRTUAL_HOST\" -e \"NODE_ENV=production\" -e \"PORT=$PORT\" $DOCKER_PORT --name $DOCKER_IMAGE_TAG $DOCKER_HUB_USERNAME/$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+          ssh -i $PRIVATEKEY_PATH -l root  $HOSTNAME docker run --restart always -d -e  \"VIRTUAL_HOST=$VIRTUAL_HOST\" -e \"NODE_ENV=production\" -e \"PORT=$PORT\" $DOCKER_PORT --name $DOCKER_IMAGE_TAG $DOCKER_HUB_USERNAME/$DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+    - script:
+        name: Clean docker Images
+        code: |
+          ssh -i $PRIVATEKEY_PATH -l root  $HOSTNAME "docker images --filter \"dangling=true\" -q --no-trunc | xargs docker rmi || echo \"No Docker images to remove \" "
