@@ -1,0 +1,24 @@
+{
+  "name": "crowdsupply-tp-scraper",
+  "version": "1.0.0",
+  "description": "A scrapper for getting details on a crowd supply campaign",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/witnessmenow/crowdsupply-tp-scraper.git"
+  },
+  "author": "Brian Lough",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/witnessmenow/crowdsupply-tp-scraper/issues"
+  },
+  "homepage": "https://github.com/witnessmenow/crowdsupply-tp-scraper#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4"
+  }
+}
