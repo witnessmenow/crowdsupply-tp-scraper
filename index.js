@@ -6,6 +6,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 3008;
 
+const cache = require('memory-cache');
 
 const getPledgeDetails = (url) => {
   return rp(url)
@@ -33,14 +34,24 @@ const getPledgeDetails = (url) => {
 }
 
 app.get('/pledge', (req, res) => {
-  getPledgeDetails(mainUrl)
-  .then(pledgeDetails => {
-    res.json(pledgeDetails);
-  })
-  .catch(err => {
-    console.log(err);
-    res.send('Error, check logs');
-  })
+
+  const cachedVersion = cache.get('pledge');
+  if(cachedVersion){
+    console.log('Cached');
+    res.json(cachedVersion);
+  } else {
+    getPledgeDetails(mainUrl)
+    .then(pledgeDetails => {
+      cache.put('pledge', pledgeDetails, 5000, function(key, value) {
+        //console.log(key + ' did ' + value);
+      });
+      res.json(pledgeDetails);
+    })
+    .catch(err => {
+      console.log(err);
+      res.send('Error, check logs');
+    })
+  }
 })
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
