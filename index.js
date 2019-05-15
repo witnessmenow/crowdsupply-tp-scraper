@@ -42,7 +42,7 @@ app.get('/pledge', (req, res) => {
   } else {
     getPledgeDetails(mainUrl)
     .then(pledgeDetails => {
-      cache.put('pledge', pledgeDetails, 5000, function(key, value) {
+      cache.put('pledge', pledgeDetails, 30000, function(key, value) {
         //console.log(key + ' did ' + value);
       });
       res.json(pledgeDetails);
