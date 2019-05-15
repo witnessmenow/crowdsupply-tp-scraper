@@ -8,7 +8,7 @@ build:
     - internal/docker-push:
           username: $DOCKER_HUB_USERNAME
           password: $DOCKER_HUB_PASSWORD
-          cmd: /pipeline/source/node_modules/forever/bin/forever /pipeline/source/index.js
+          cmd: /pipeline/source/index.js
           tag: $DOCKER_IMAGE_TAG
           repository: $DOCKER_HUB_USERNAME/$DOCKER_IMAGE_NAME
           registry: https://registry.hub.docker.com
